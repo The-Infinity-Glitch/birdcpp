@@ -16,3 +16,6 @@ BirdCPP is a simple C/C++ IDE, it has basics feartures of a IDE, the idea of the
 
 ## Current features
 - Nothing :)
+
+## Screenshots
+![BirdCPP initial stage](github_resources/screenshots/initial_stage.png)
