@@ -2,13 +2,110 @@
 #include "backends/imgui/imgui_impl_sdl2.h"
 #include "backends/imgui/imgui_impl_opengl3.h"
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <SDL.h>
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <SDL_opengles2.h>
-#else
 #include <SDL_opengl.h>
-#endif
+
+// Draw the main menu bar -> [File, Edit, View, Search, Project, Build, Debug, Settings, About]
+void draw_main_window_menu_bar(bool *program_done) {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::BeginMenu("Open")) {
+                if (ImGui::MenuItem("File", "Ctrl+O")) {}
+                if (ImGui::MenuItem("Folder", "Ctrl+Shift+O")) {}
+                if (ImGui::MenuItem("CMake solution")) {}
+
+                ImGui::EndMenu();
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Save file", "Ctrl+S")) {}
+            if (ImGui::MenuItem("Save file as")) {}
+            if (ImGui::MenuItem("Save all", "Ctrl+Shift+S")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Close file", "Ctrl+W")) {}
+            if (ImGui::MenuItem("Close all", "Ctrl+Shift+W")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
+                *program_done = true;
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Undo", "Ctrl+Z")) {}
+            if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z")) {}
+            if (ImGui::MenuItem("Clear change history")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Cut", "Ctrl+X")) {}
+            if (ImGui::MenuItem("Copy", "Ctrl+C")) {}
+            if (ImGui::MenuItem("Paste", "Ctrl+V")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Swap header/source files", "F11")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Select all", "Ctrl+A")) {}
+            if (ImGui::MenuItem("Select next occurrence", "Ctrl+E")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Toggle comment", "Ctrl+;")) {}
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Code completion", "Ctrl+Space")) {}
+
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("View")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Search")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Project")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Build")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Build")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Debug")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Settings")) {
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("About")) {
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+}
 
 int main(int, char**) {
     // Setup SDL
@@ -18,14 +115,7 @@ int main(int, char**) {
     }
 
     // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-    // GL ES 2.0 + GLSL 100 (WebGL 1.0)
-    const char* glsl_version = "#version 100";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(IMGUI_IMPL_OPENGL_ES3)
+#if defined(IMGUI_IMPL_OPENGL_ES3)
     // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
     const char* glsl_version = "#version 300 es";
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
@@ -80,7 +170,9 @@ int main(int, char**) {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+
     ImGuiIO& io = ImGui::GetIO(); (void) io;
+
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
@@ -140,8 +232,11 @@ int main(int, char**) {
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
-	// Create a dockspace
+        // Create a dockspace
         ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
+        // Render the main menu bar
+        draw_main_window_menu_bar(&done);
 
         // ImGui things here
 
