@@ -1,19 +1,52 @@
 #include "imgui/imgui.h"
 #include "backends/imgui/imgui_impl_sdl2.h"
 #include "backends/imgui/imgui_impl_opengl3.h"
+
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
+
+#include "file_manager.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+struct BirdCPPContext {
+    bool done;
+    bool open_file_dialog;
+};
+
+void open_file_dialog(BirdCPPContext *context) {
+    // open Dialog Simple
+    IGFD::FileDialogConfig config;
+    config.path = ".";
+
+    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp,.txt", config);
+
+    // display
+    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
+            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
+            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
+            context->open_file_dialog = false;
+            // action
+            BirdCPPFileManager::read_file(filePathName);
+        }
+
+        // close
+        ImGuiFileDialog::Instance()->Close();
+    }
+}
+
 // Draw the main menu bar -> [File, Edit, View, Search, Project, Build, Debug, Settings, About]
-void draw_main_window_menu_bar(bool *program_done) {
+void draw_main_window_menu_bar(BirdCPPContext *context) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("Open")) {
-                if (ImGui::MenuItem("File", "Ctrl+O")) {}
+                if (ImGui::MenuItem("File", "Ctrl+O")) {
+                    context->open_file_dialog = true;
+                }
                 if (ImGui::MenuItem("Folder", "Ctrl+Shift+O")) {}
                 if (ImGui::MenuItem("CMake solution")) {}
 
@@ -34,7 +67,7 @@ void draw_main_window_menu_bar(bool *program_done) {
             ImGui::Separator();
 
             if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
-                *program_done = true;
+                context->done = true;
             }
 
             ImGui::EndMenu();
@@ -108,6 +141,8 @@ void draw_main_window_menu_bar(bool *program_done) {
 }
 
 int main(int, char**) {
+    BirdCPPContext birdcpp_context;
+
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         printf("Error: %s\n", SDL_GetError());
@@ -206,9 +241,9 @@ int main(int, char**) {
     // io.InitFilename = nullptr;
 
     // Main loop
-    bool done = false;
+    //bool done = false;
 
-    while (!done) {
+    while (!birdcpp_context.done) {
         // Poll and handle events (inputs, window resize, etc.)
         SDL_Event event;
 
@@ -216,10 +251,10 @@ int main(int, char**) {
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             if (event.type == SDL_QUIT)
-                done = true;
+                birdcpp_context.done = true;
 
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                done = true;
+                birdcpp_context.done = true;
         }
 
         if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
@@ -236,7 +271,11 @@ int main(int, char**) {
         ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
         // Render the main menu bar
-        draw_main_window_menu_bar(&done);
+        draw_main_window_menu_bar(&birdcpp_context);
+
+        if (birdcpp_context.open_file_dialog) {
+            open_file_dialog(&birdcpp_context);
+        }
 
         // ImGui things here
 
