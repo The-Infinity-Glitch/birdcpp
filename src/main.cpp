@@ -5,42 +5,19 @@
 #include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 #include "file_manager.h"
+#include "dialogs.h"
+#include "internals.h"
+#include "panels.h"
 
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
 #include <SDL.h>
 #include <SDL_opengl.h>
 
-struct BirdCPPContext {
-    bool done;
-    bool open_file_dialog;
-};
-
-void open_file_dialog(BirdCPPContext *context) {
-    // open Dialog Simple
-    IGFD::FileDialogConfig config;
-    config.path = ".";
-
-    ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose File", ".cpp,.h,.hpp,.txt", config);
-
-    // display
-    if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
-        if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
-            std::string filePathName = ImGuiFileDialog::Instance()->GetFilePathName();
-            std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
-            context->open_file_dialog = false;
-            // action
-            BirdCPPFileManager::read_file(filePathName);
-        }
-
-        // close
-        ImGuiFileDialog::Instance()->Close();
-    }
-}
-
 // Draw the main menu bar -> [File, Edit, View, Search, Project, Build, Debug, Settings, About]
-void draw_main_window_menu_bar(BirdCPPContext *context) {
+void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("Open")) {
@@ -141,7 +118,7 @@ void draw_main_window_menu_bar(BirdCPPContext *context) {
 }
 
 int main(int, char**) {
-    BirdCPPContext birdcpp_context;
+    BirdCPP::BirdCPPContext birdcpp_context;
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
@@ -274,8 +251,12 @@ int main(int, char**) {
         draw_main_window_menu_bar(&birdcpp_context);
 
         if (birdcpp_context.open_file_dialog) {
-            open_file_dialog(&birdcpp_context);
+            BirdCPPDialogs::open_file_dialog(&birdcpp_context);
         }
+
+        BirdCPPPanels::management_panel();
+        BirdCPPPanels::toolbar_panel();
+        ImGui::ShowDemoWindow();
 
         // ImGui things here
 
