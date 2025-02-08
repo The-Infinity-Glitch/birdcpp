@@ -6,3 +6,6 @@
 	path = include/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog.git
 	branch = master
+[submodule "include/IconFontCppHeaders"]
+	path = include/IconFontCppHeaders
+	url = https://github.com/juliettef/IconFontCppHeaders.git

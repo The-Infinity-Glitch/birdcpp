@@ -2,8 +2,9 @@
 #include "backends/imgui/imgui_impl_sdl2.h"
 #include "backends/imgui/imgui_impl_opengl3.h"
 
+#include "IconFontCppHeaders/IconsCodicons.h"
+
 #include "dialogs.h"
-// #include "imgui_internal.h"
 #include "internals.h"
 #include "panels.h"
 
@@ -113,7 +114,9 @@ void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
 }
 
 int main(int, char**) {
-    BirdCPP::BirdCPPContext birdcpp_context;
+    BirdCPP::BirdCPPContext birdcpp_context = *new BirdCPP::BirdCPPContext;
+    birdcpp_context.loaded_targets.push_back("Engine");
+    birdcpp_context.loaded_targets.push_back("Sandbox");
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
@@ -207,7 +210,16 @@ int main(int, char**) {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
-    io.Fonts->AddFontFromFileTTF("../include/imgui/misc/fonts/DroidSans.ttf", 16.0f);
+    float fontSize = 16.0f;
+
+    io.Fonts->AddFontFromFileTTF("resources/fonts/DroidSans.ttf", fontSize);
+
+    static const ImWchar icons_range[] = { ICON_MIN_CI, ICON_MAX_16_CI, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+
+    io.Fonts->AddFontFromFileTTF("resources/fonts/codicon.ttf", fontSize, &icons_config, icons_range);
 
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -216,8 +228,6 @@ int main(int, char**) {
     // io.InitFilename = nullptr;
 
     // Main loop
-    //bool done = false;
-
     while (!birdcpp_context.done) {
         // Poll and handle events (inputs, window resize, etc.)
         SDL_Event event;
@@ -244,7 +254,7 @@ int main(int, char**) {
 
         // Create a dockspace
         float menuBarHeight = ImGui::GetFrameHeight();
-        float toolbarHeight = 40.0f;
+        float toolbarHeight = BirdCPP::BirdCPPToobarHeight;
         float totalTopHeight = menuBarHeight + toolbarHeight;
         
         ImGui::SetNextWindowPos(ImVec2(0, totalTopHeight));
@@ -273,7 +283,7 @@ int main(int, char**) {
         }
 
         BirdCPPPanels::management_panel();
-        BirdCPPPanels::toolbar_panel();
+        BirdCPPPanels::toolbar_panel(&birdcpp_context);
         ImGui::ShowDemoWindow();
 
         // ImGui things here

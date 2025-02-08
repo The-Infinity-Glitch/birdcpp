@@ -16,6 +16,7 @@ set(SOURCE_DIRECTORY "src")
 # Individual library directories
 set(IMGUI_DIR "include/imgui")
 set(FILE_DIALOG_DIR "include/ImGuiFileDialog")
+set(ICON_FONT_CPP "include/IconFontCppHeaders")
 
 # Main application source and hearders
 file(GLOB Source CONFIGURE_DEPENDS ${SOURCE_DIRECTORY}/*.cpp ${SOURCE_DIRECTORY}/backends/imgui/*.cpp)
