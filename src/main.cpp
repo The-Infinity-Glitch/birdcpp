@@ -3,6 +3,7 @@
 #include "backends/imgui/imgui_impl_opengl3.h"
 
 #include "dialogs.h"
+// #include "imgui_internal.h"
 #include "internals.h"
 #include "panels.h"
 
@@ -242,7 +243,27 @@ int main(int, char**) {
         ImGui::NewFrame();
 
         // Create a dockspace
-        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        float menuBarHeight = ImGui::GetFrameHeight();
+        float toolbarHeight = 40.0f;
+        float totalTopHeight = menuBarHeight + toolbarHeight;
+        
+        ImGui::SetNextWindowPos(ImVec2(0, totalTopHeight));
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - totalTopHeight));
+        ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+
+        ImGuiWindowFlags dockspace_frame_flags = (ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
+
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+            ImGui::Begin("Dockspace", nullptr, dockspace_frame_flags);
+        
+            ImGuiID dockspaceID = ImGui::GetID("BirdCPPDockspace");
+
+            ImGui::DockSpace(dockspaceID, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
+
+            ImGui::End();
+            ImGui::PopStyleVar();
+        }
 
         // Render the main menu bar
         draw_main_window_menu_bar(&birdcpp_context);
