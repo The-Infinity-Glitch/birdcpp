@@ -2,16 +2,10 @@
 #include "backends/imgui/imgui_impl_sdl2.h"
 #include "backends/imgui/imgui_impl_opengl3.h"
 
-#include "ImGuiFileDialog/ImGuiFileDialog.h"
-
-#include "file_manager.h"
 #include "dialogs.h"
 #include "internals.h"
 #include "panels.h"
 
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -122,7 +116,8 @@ int main(int, char**) {
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        printf("Error: %s\n", SDL_GetError());
+        std::cout << "Error: %s\n" << SDL_GetError() << std::endl;
+
         return -1;
     }
 
@@ -165,14 +160,16 @@ int main(int, char**) {
     SDL_Window* window = SDL_CreateWindow("BirdCPP - C/C++ Simple IDE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
 
     if (window == nullptr) {
-        printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+        std::cout << "Error: SDL_CreateWindow(): %s\n" << SDL_GetError() << std::endl;
+
         return -1;
     }
 
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
     if (gl_context == nullptr) {
-        printf("Error: SDL_GL_CreateContext(): %s\n", SDL_GetError());
+        std::cout << "Error: SDL_GL_CreateContext(): %s\n" << SDL_GetError() << std::endl;
+
         return -1;
     }
 
