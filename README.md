@@ -34,4 +34,9 @@ make
 Move or copy the folder `resources/` of the BirdCPP root source directory to inside the build directory.
 
 ## Screenshots
+
+### BirdCPP baby steps
 ![BirdCPP initial stage](github_resources/screenshots/initial_stage.png)
+
+### BirdCPP ui shapping
+![BirdCPP ui shapping](github_resources/screenshots/20250208_21h01m07s_grim.png)
