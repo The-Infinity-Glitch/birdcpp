@@ -2,23 +2,22 @@
 #include "backends/imgui/imgui_impl_sdl2.h"
 #include "backends/imgui/imgui_impl_opengl3.h"
 
-#include "IconFontCppHeaders/IconsCodicons.h"
-
 #include "dialogs.h"
 #include "internals.h"
+#include "application.h"
 #include "panels.h"
 
-#include <iostream>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <iterator>
 
 // Draw the main menu bar -> [File, Edit, View, Search, Project, Build, Debug, Settings, About]
-void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
+void draw_main_window_menu_bar(BirdCPP::BirdCPPApplication *app) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("Open")) {
                 if (ImGui::MenuItem("File", "Ctrl+O")) {
-                    context->open_file_dialog = true;
+                    app->get_context()->open_file_dialog = true;
                 }
                 if (ImGui::MenuItem("Folder", "Ctrl+Shift+O")) {}
                 if (ImGui::MenuItem("CMake solution")) {}
@@ -40,7 +39,7 @@ void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
             ImGui::Separator();
 
             if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
-                context->done = true;
+                app->running = false;
             }
 
             ImGui::EndMenu();
@@ -114,110 +113,9 @@ void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
 }
 
 int main(int, char**) {
-    BirdCPP::BirdCPPContext birdcpp_context;
-
-    // Setup SDL
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-        std::cout << "Error: %s\n" << SDL_GetError() << std::endl;
-
-        return -1;
-    }
-
-    // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES3)
-    // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
-    const char* glsl_version = "#version 300 es";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__)
-    // GL 3.2 Core + GLSL 150
-    const char* glsl_version = "#version 150";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif
-
-    // From 2.0.18: Enable native IME.
-#ifdef SDL_HINT_IME_SHOW_UI
-    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-#endif
-
-    // Create window with graphics context
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-
-    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-
-    SDL_Window* window = SDL_CreateWindow("BirdCPP - C/C++ Simple IDE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
-
-    if (window == nullptr) {
-        std::cout << "Error: SDL_CreateWindow(): %s\n" << SDL_GetError() << std::endl;
-
-        return -1;
-    }
-
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-
-    if (gl_context == nullptr) {
-        std::cout << "Error: SDL_GL_CreateContext(): %s\n" << SDL_GetError() << std::endl;
-
-        return -1;
-    }
-
-    SDL_GL_MakeCurrent(window, gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO(); (void) io;
-
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-    //io.ConfigViewportsNoAutoMerge = true;
-    //io.ConfigViewportsNoTaskBarIcon = true;
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    ImGuiStyle& style = ImGui::GetStyle();
-
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Load Fonts
-    float fontSize = 16.0f;
-
-    io.Fonts->AddFontFromFileTTF("resources/fonts/DroidSans.ttf", fontSize);
-
-    static const ImWchar icons_range[] = { ICON_MIN_CI, ICON_MAX_16_CI, 0 };
-    ImFontConfig icons_config;
-    icons_config.MergeMode = true;
-    icons_config.PixelSnapH = true;
-
-    io.Fonts->AddFontFromFileTTF("resources/fonts/codicon.ttf", fontSize, &icons_config, icons_range);
+    BirdCPP::BirdCPPApplication application;
+    application.setup();
+    application.running = true;
 
     // Our state
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -226,7 +124,7 @@ int main(int, char**) {
     // io.InitFilename = nullptr;
 
     // Main loop
-    while (!birdcpp_context.done) {
+    while (application.running) {
         // Poll and handle events (inputs, window resize, etc.)
         SDL_Event event;
 
@@ -234,13 +132,13 @@ int main(int, char**) {
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             if (event.type == SDL_QUIT)
-                birdcpp_context.done = true;
+                application.running = false;
 
-            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
-                birdcpp_context.done = true;
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.get_main_window()))
+                application.running = false;
         }
 
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED) {
+        if (SDL_GetWindowFlags(application.get_main_window()) & SDL_WINDOW_MINIMIZED) {
             SDL_Delay(10);
             continue;
         }
@@ -256,7 +154,7 @@ int main(int, char**) {
         float totalTopHeight = menuBarHeight + toolbarHeight;
         
         ImGui::SetNextWindowPos(ImVec2(0, totalTopHeight));
-        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y - totalTopHeight));
+        ImGui::SetNextWindowSize(ImVec2(application.get_imgui_io()->DisplaySize.x, application.get_imgui_io()->DisplaySize.y - totalTopHeight));
         ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
 
         ImGuiWindowFlags dockspace_frame_flags = (ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
@@ -274,54 +172,40 @@ int main(int, char**) {
         }
 
         // Render the main menu bar
-        draw_main_window_menu_bar(&birdcpp_context);
+        draw_main_window_menu_bar(&application);
 
-        if (birdcpp_context.open_file_dialog) {
-            BirdCPPDialogs::open_file_dialog(&birdcpp_context);
+        if (application.get_context()->open_file_dialog) {
+            BirdCPPDialogs::open_file_dialog(application.get_context());
         }
 
         BirdCPPPanels::management_panel();
-        BirdCPPPanels::toolbar_panel(&birdcpp_context);
+        BirdCPPPanels::toolbar_panel(application.get_context());
         ImGui::ShowDemoWindow();
 
-        for (int i = 0; i < birdcpp_context.openedFiles.size(); i++) {
+        for (int i = 0; i < application.get_context()->openedFiles.size(); i++) {
             {
-                ImGui::Begin(birdcpp_context.openedFiles[i].fileName.c_str());
-                ImGui::Text("%s",  birdcpp_context.openedFiles[i].currentData.c_str());
+                bool tabOpen = true;
+                ImGui::Begin(application.get_context()->openedFiles[i].fileName.c_str(), &tabOpen);
+                ImGui::Text("%s", application.get_context()->openedFiles[i].currentData.c_str());
                 ImGui::End();
+
+                if (!tabOpen) {
+                    application.get_context()->openedFiles.erase(std::next(application.get_context()->openedFiles.begin(), i));
+                }
             }
         }
 
         // ImGui things here
 
-        // Rendering
-        ImGui::Render();
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-        // Update and Render additional Platform Windows
-        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
-            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-        }
-
-        SDL_GL_SwapWindow(window);
+        // Render and update
+        application.render(clear_color);
+        application.update();
     }
 
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
-    SDL_GL_DeleteContext(gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 
     return 0;
 }
