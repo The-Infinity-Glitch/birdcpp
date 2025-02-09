@@ -19,6 +19,10 @@ namespace BirdCPP {
     }
 
     BirdCPPApplication::~BirdCPPApplication() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+
         SDL_GL_DeleteContext(sdl_context);
         SDL_DestroyWindow(main_window);
         SDL_Quit();
@@ -138,6 +142,10 @@ namespace BirdCPP {
         }
 
         SDL_GL_SwapWindow(main_window);
+    }
+
+    void BirdCPPApplication::quit() {
+        running = false;
     }
 
     std::string BirdCPPApplication::get_glsl_version() {

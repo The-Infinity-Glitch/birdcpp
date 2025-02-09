@@ -14,7 +14,6 @@ namespace BirdCPP {
     }
 
     BirdCPPContext::BirdCPPContext() {
-        done = false;
         open_file_dialog = false;
         current_target = 0;
 

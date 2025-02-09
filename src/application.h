@@ -22,6 +22,8 @@ namespace BirdCPP {
             void render(ImVec4 clear_color);
             void update();
 
+            void quit();
+
             std::string get_glsl_version();
             BirdCPPContext* get_context();
             SDL_Window* get_main_window();

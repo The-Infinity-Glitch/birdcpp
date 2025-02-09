@@ -17,7 +17,6 @@ namespace BirdCPP {
 
     class BirdCPPContext {
         public:
-            bool done;
             bool open_file_dialog;
             std::vector<std::string> loaded_targets;
             int current_target;

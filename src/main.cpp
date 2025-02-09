@@ -39,7 +39,7 @@ void draw_main_window_menu_bar(BirdCPP::BirdCPPApplication *app) {
             ImGui::Separator();
 
             if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
-                app->running = false;
+                app->quit();
             }
 
             ImGui::EndMenu();
@@ -132,10 +132,10 @@ int main(int, char**) {
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             if (event.type == SDL_QUIT)
-                application.running = false;
+                application.quit();
 
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(application.get_main_window()))
-                application.running = false;
+                application.quit();
         }
 
         if (SDL_GetWindowFlags(application.get_main_window()) & SDL_WINDOW_MINIMIZED) {
@@ -201,11 +201,6 @@ int main(int, char**) {
         application.render(clear_color);
         application.update();
     }
-
-    // Cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
 
     return 0;
 }
