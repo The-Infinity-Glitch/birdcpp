@@ -1,11 +1,11 @@
+#include "panels.h"
+
 #include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
 
 #include "IconFontCppHeaders/IconsCodicons.h"
 
-#include "imgui_internal.h"
 #include "internals.h"
-
-#include "panels.h"
 
 #include <string>
 
@@ -23,7 +23,9 @@ void BirdCPPPanels::toolbar_panel(BirdCPP::BirdCPPContext *context) {
 
     ImGui::Begin("Toolbar", nullptr, flags);
 
-    if (ImGui::Button(ICON_CI_FILE, ImVec2(32, 32))) {}
+    if (ImGui::Button(ICON_CI_FILE, ImVec2(32, 32))) {
+        context->open_file_dialog = true;
+    }
 
     ImGui::SetItemTooltip("Open a single file");
 
@@ -60,21 +62,23 @@ void BirdCPPPanels::toolbar_panel(BirdCPP::BirdCPPContext *context) {
     std::string preview_target_value;
 
     if (context->loaded_targets.empty()) {
-        preview_target_value = "";
+        preview_target_value = "Empty";
     } else {
         preview_target_value = context->loaded_targets[context->current_target];
     }
 
     if (ImGui::BeginCombo("##", preview_target_value.c_str(), ImGuiComboFlags_WidthFitPreview)) {
-        for (int n = 0; n < context->loaded_targets.size(); n++) {
-            const bool is_selected = (context->current_target == n);
+        if (!context->loaded_targets.empty()) {
+            for (int n = 0; n < context->loaded_targets.size(); n++) {
+                const bool is_selected = (context->current_target == n);
 
-            if (ImGui::Selectable(context->loaded_targets[n].c_str(), is_selected)) {
-                context->current_target = n;
-            }
+                if (ImGui::Selectable(context->loaded_targets[n].c_str(), is_selected)) {
+                    context->current_target = n;
+                }
 
-            if (is_selected) {
-                ImGui::SetItemDefaultFocus();
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
             }
         }
 

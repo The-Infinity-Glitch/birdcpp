@@ -4,7 +4,7 @@
 
 #include "dialogs.h"
 #include "internals.h"
-#include "file_manager.h"
+// #include "file_manager.h"
 
 void BirdCPPDialogs::open_file_dialog(BirdCPP::BirdCPPContext *context) {
     // open Dialog Simple
@@ -20,9 +20,7 @@ void BirdCPPDialogs::open_file_dialog(BirdCPP::BirdCPPContext *context) {
             std::string filePath = ImGuiFileDialog::Instance()->GetCurrentPath();
             context->open_file_dialog = false;
             // action
-            std::string result = BirdCPPFileManager::read_file(filePathName);
-
-            std::cout << result;
+            context->openFile(filePathName);
         }
 
         // close

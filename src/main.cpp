@@ -114,9 +114,7 @@ void draw_main_window_menu_bar(BirdCPP::BirdCPPContext *context) {
 }
 
 int main(int, char**) {
-    BirdCPP::BirdCPPContext birdcpp_context = *new BirdCPP::BirdCPPContext;
-    birdcpp_context.loaded_targets.push_back("Engine");
-    birdcpp_context.loaded_targets.push_back("Sandbox");
+    BirdCPP::BirdCPPContext birdcpp_context;
 
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
@@ -285,6 +283,14 @@ int main(int, char**) {
         BirdCPPPanels::management_panel();
         BirdCPPPanels::toolbar_panel(&birdcpp_context);
         ImGui::ShowDemoWindow();
+
+        for (int i = 0; i < birdcpp_context.openedFiles.size(); i++) {
+            {
+                ImGui::Begin(birdcpp_context.openedFiles[i].fileName.c_str());
+                ImGui::Text("%s",  birdcpp_context.openedFiles[i].currentData.c_str());
+                ImGui::End();
+            }
+        }
 
         // ImGui things here
 
