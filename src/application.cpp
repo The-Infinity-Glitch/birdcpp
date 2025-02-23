@@ -86,21 +86,10 @@ namespace BirdCPP {
         imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         imgui_io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         imgui_io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-        imgui_io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-        //imgui_io.ConfigViewportsNoAutoMerge = true;
-        //imgui_io.ConfigViewportsNoTaskBarIcon = true;
 
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
         //ImGui::StyleColorsLight();
-
-        // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-        ImGuiStyle& style = ImGui::GetStyle();
-
-        if (imgui_io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            style.WindowRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-        }
 
         // Setup Platform/Renderer backends
         ImGui_ImplSDL2_InitForOpenGL(main_window, sdl_context);
@@ -166,7 +155,7 @@ namespace BirdCPP {
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-   
+
         SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
 
         main_window = SDL_CreateWindow("BirdCPP - C/C++ Simple IDE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
